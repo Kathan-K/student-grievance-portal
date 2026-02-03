@@ -1,19 +1,16 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "https://student-grievance-portal-7g00.onrender.com/api",
+  baseURL: "https://0670t6ld-5000.inc1.devtunnels.ms/api",
 });
 
-// Automatically attach JWT token to every request
-API.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+// Attach token automatically
+API.interceptors.request.use((req) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    req.headers.Authorization = `Bearer ${token}`;
+  }
+  return req;
+});
 
 export default API;
