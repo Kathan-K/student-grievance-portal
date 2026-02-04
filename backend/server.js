@@ -1,52 +1,116 @@
-require('dotenv').config();
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import API from "../services/api";
 
-const express = require('express');
-const cors = require('cors');
+function Register() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
+  const navigate = useNavigate();
 
-// Database connection (just importing initializes it)
-const db = require('./db');
+  const handleRegister = async (e) => {
+    e.preventDefault();
 
-// Routes
-const authRoutes = require('./routes/authRoutes');
-const grievanceRoutes = require('./routes/grievanceRoutes');
+    try {
+      await API.post("/auth/register", {
+        name,
+        email,
+        password,
+      });
 
-const app = express();
+      setMessage("Registration successful ✅ Redirecting to login...");
 
-/* =========================
-   MIDDLEWARES
-========================= */
+      setTimeout(() => {
+        navigate("/login");
+      }, 1500);
 
-// CORS (for now allow all origins)
-// Later we will restrict this to frontend URL
-app.use(
-  cors({
-    origin: "*",
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
+      setName("");
+      setEmail("");
+      setPassword("");
+    } catch (err) {
+      setMessage(err.response?.data?.message || "Registration failed");
+    }
+  };
 
-// Parse JSON request bodies
-app.use(express.json());
+  return (
+    <div style={{ maxWidth: "420px", margin: "60px auto", fontFamily: "Segoe UI" }}>
+      <h1>Student Grievance Portal</h1>
+      <p style={{ color: "#555" }}>
+        Create an account to submit and track grievances
+      </p>
 
-/* =========================
-   ROUTES
-========================= */
+      <h2>Register</h2>
 
-app.use('/api/auth', authRoutes);
-app.use('/api/grievances', grievanceRoutes);
+      <form onSubmit={handleRegister}>
+        <div>
+          <label>Name</label>
+          <br />
+          <input
+            type="text"
+            placeholder="Enter full name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
+        </div>
 
-// Health check route
-app.get('/', (req, res) => {
-  res.send('Student Grievance Portal Backend is running 🚀');
-});
+        <br />
 
-/* =========================
-   SERVER START
-========================= */
+        <div>
+          <label>Email</label>
+          <br />
+          <input
+            type="email"
+            placeholder="Enter institutional email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </div>
 
-const PORT = process.env.PORT || 5000;
+        <br />
 
-app.listen(PORT, () => {
-  console.log(`✅ Server running on port ${PORT}`);
-});
+        <div>
+          <label>Password</label>
+          <br />
+          <input
+            type="password"
+            placeholder="Minimum 6 characters"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
+
+        <br />
+
+        {/* Account Type (Locked) */}
+        <div>
+          <label>Account Type</label>
+          <br />
+          <select value="user" disabled>
+            <option>User (Student)</option>
+          </select>
+
+          <p style={{ fontSize: "13px", color: "#666", marginTop: "5px" }}>
+            Admin accounts are created and managed by authorities only.
+          </p>
+        </div>
+
+        <br />
+
+        <button type="submit">Register</button>
+      </form>
+
+      {message && <p>{message}</p>}
+
+      <p style={{ marginTop: "15px" }}>
+        Already have an account?{" "}
+        <Link to="/login">Login here</Link>
+      </p>
+    </div>
+  );
+}
+
+export default Register;
